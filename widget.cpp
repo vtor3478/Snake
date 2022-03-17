@@ -57,21 +57,28 @@ void Widget::Feed()
 
 void Widget::keyPressEvent(QKeyEvent *event)
 {
+    QPoint keyDir = QPoint(0,0);
     if("w" == event->text())
     {
-        dir = QPoint(0,-1);
+        keyDir = QPoint(0,-1);
     }
     else if("s" == event->text())
     {
-        dir = QPoint(0,1);
+        keyDir = QPoint(0,1);
     }
     else if("a" == event->text())
     {
-        dir = QPoint(-1,0);
+        keyDir = QPoint(-1,0);
     }
     else if("d" == event->text())
     {
-        dir = QPoint(1,0);
+        keyDir = QPoint(1,0);
+    }
+    // 如果按下了按键
+    if (keyDir != QPoint(0,0)
+            && snakeBody[0] + keyDir != snakeBody[1])
+    {
+        dir = keyDir;
     }
 }
 
