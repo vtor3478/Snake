@@ -32,7 +32,7 @@ public:
     void SnakeRun();
     void Feed();
     QPoint snakeBody[COL * ROW];
-    QPoint dir;
+    QPoint snakeDir;
     QPoint food;
     int snakeLen;
     QTimer runTimer;

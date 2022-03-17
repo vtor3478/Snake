@@ -13,7 +13,7 @@ Widget::Widget(QWidget *parent)
     snakeBody[1] = snakeBody[0] + QPoint(-1,0);
     snakeBody[2] = snakeBody[1] + QPoint(-1,0);
     snakeLen = 3;
-    dir = QPoint(1,0);
+    snakeDir = QPoint(1,0);
 
     runTimer.setInterval(200);
     runTimer.start();
@@ -39,12 +39,14 @@ void Widget::SnakeRun()
     {
         snakeBody[i] = snakeBody[i-1];
     }
-    snakeBody[0] += dir;
+    snakeBody[0] += snakeDir;
     snakeBody[0].rx() = (snakeBody[0].x() + ROW) % ROW;
     snakeBody[0].ry() = (snakeBody[0].y() + COL) % COL;
 
     if(food == snakeBody[0])
     {
+        // 将身子最后一节赋值，就不会显示到00了
+        snakeBody[snakeLen] = snakeBody[snakeLen - 1];
         ++snakeLen;
         Feed();
     }
@@ -78,7 +80,7 @@ void Widget::keyPressEvent(QKeyEvent *event)
     if (keyDir != QPoint(0,0)
             && snakeBody[0] + keyDir != snakeBody[1])
     {
-        dir = keyDir;
+        snakeDir = keyDir;
     }
 }
 
