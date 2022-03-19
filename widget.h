@@ -11,13 +11,15 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
 QT_END_NAMESPACE
 
-#define COL 10
-#define ROW 10
+#define COL 10 // 列，常用于y
+#define ROW 10 // 行，常用于x
 #define SNAKE_WIDTH 50
 #define FOOD_WIDTH 30
 #define SCALE 50
 #define DELAY_LEVEL 5
 #define DEFAULT_DELAY_LEVEL 2
+#define EAT_YOURSELF    1
+#define HIT_THE_WALL    2
 
 
 

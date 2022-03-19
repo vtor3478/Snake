@@ -28,7 +28,6 @@ Widget::Widget(QWidget *parent)
     connect(&updateTimer,&QTimer::timeout,[=](){
         update();
     });
-    CreateFood();
 }
 
 Widget::~Widget()
@@ -50,8 +49,8 @@ void Widget::Init()
     keyDir = QPoint(0,0);
     snakeDir = QPoint(0,0);
     delayLevelIdx = DEFAULT_DELAY_LEVEL;
-    runTimer.start();
     runTimer.setInterval(delayLevel[delayLevelIdx]);
+    runTimer.start();
 }
 
 void Widget::CheckFail()
@@ -62,9 +61,16 @@ void Widget::CheckFail()
     }
     for (int i = 1;i < snakeLen - 1; i++)
     {
-        if (snakeBody[i] == snakeBody[0])
+        // 吃到了身体，或者超出了边界，就认定为fail
+        if (snakeBody[i] == snakeBody[0]) {
+            failFlag = EAT_YOURSELF;
+            runTimer.stop();
+        } else if (snakeBody[0].x() < 0
+                || snakeBody[0].x() >= ROW
+                || snakeBody[0].y() < 0
+                || snakeBody[0].y() >= COL)
         {
-            failFlag = 1;
+            failFlag = HIT_THE_WALL;
             runTimer.stop();
         }
     }
@@ -128,13 +134,17 @@ void Widget::SnakeRun()
     {
         return;
     }
+    // 运动时，先收缩尾巴，再伸出头，所以身子运动在前面
     for (int i = snakeLen - 1;i > 0; i--)
     {
         snakeBody[i] = snakeBody[i-1];
     }
     snakeBody[0] += snakeDir;
-    snakeBody[0].rx() = (snakeBody[0].x() + ROW) % ROW;
-    snakeBody[0].ry() = (snakeBody[0].y() + COL) % COL;
+    // 无敌模式，穿墙，自动去到另一边
+    if (invincibleFlag) {
+        snakeBody[0].rx() = (snakeBody[0].x() + ROW) % ROW;
+        snakeBody[0].ry() = (snakeBody[0].y() + COL) % COL;
+    }
     if(food == snakeBody[0])
     {
         // 将身子最后一节赋值，就不会显示到00了
@@ -196,7 +206,7 @@ void Widget::keyPressEvent(QKeyEvent *event)
     }
     else if ("c" == event->text())
     {
-        // c键确认无敌
+        // c键确认无敌，且能穿墙
         invincibleFlag = !invincibleFlag;
     }
     else if ("r" == event->text()) {
@@ -221,6 +231,7 @@ void Widget::paintEvent(QPaintEvent *)
     QPainter painter(this);
     if (invincibleFlag)
     {
+        // 无敌模式，可以穿墙，画笔颜色为红色
         painter.setPen(qRgb(255,0,0));
     }
     QString str = "food:" + QString::number(food.x()) + QString::number(food.y());
@@ -244,10 +255,15 @@ void Widget::paintEvent(QPaintEvent *)
                         FOOD_WIDTH / 2,FOOD_WIDTH / 2);
     
     if (winFlag) {
-        painter.drawText(QPoint(COL,4) * SCALE + QPoint(10,0),"!!!win!!!");
+        painter.drawText(QPoint(COL,4) * SCALE + QPoint(10,20 * 0),"!!!win!!!");
     }
-    else if (failFlag) {
-        painter.drawText(QPoint(COL,4) * SCALE + QPoint(10,0),"!!!fail!!!");
+    else if (failFlag == EAT_YOURSELF) {
+        painter.drawText(QPoint(COL,4) * SCALE + QPoint(10,20 * 0),"!!!fail!!!");
+        painter.drawText(QPoint(COL,4) * SCALE + QPoint(10,20 * 1),"!!!死因：撞到了自己!!!");
+    }
+    else if (failFlag == HIT_THE_WALL) {
+        painter.drawText(QPoint(COL,4) * SCALE + QPoint(10,20 * 0),"!!!fail!!!");
+        painter.drawText(QPoint(COL,4) * SCALE + QPoint(10,20 * 1),"!!!死因：撞到了墙壁!!!");
     }
     str = "speed["+QString::number(delayLevelIdx) + "]=" + QString::number(delayLevel[delayLevelIdx]);
     painter.drawText(QPoint(COL,5) * SCALE + QPoint(10, 20 * 0),str);
@@ -260,5 +276,7 @@ void Widget::paintEvent(QPaintEvent *)
     str = QString("z暂停，方向键继续行动,\n");
     painter.drawText(QPoint(COL,5) * SCALE + QPoint(10, 20 * 4),str);
     str = QString("x切换为自动模式，\n");
+    painter.drawText(QPoint(COL,5) * SCALE + QPoint(10, 20 * 5),str);
+    str = QString("c切换为无敌模式，再按一下退出，无敌时可穿墙，颜色为红色\n");
     painter.drawText(QPoint(COL,5) * SCALE + QPoint(10, 20 * 5),str);
 }
