@@ -29,11 +29,13 @@ public:
     ~Widget();
     void paintEvent(QPaintEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void GetDir();
     void SnakeRun();
     void CreateFood();
     char snakeOccupy[COL][ROW];
     QPoint snakeBody[COL * ROW * 10];
     QPoint snakeDir;
+    QPoint keyDir;
     QPoint food;
     int snakeLen;
     QTimer runTimer;

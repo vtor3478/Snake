@@ -6,17 +6,16 @@ Widget::Widget(QWidget *parent)
     , ui(new Ui::Widget)
 {
     ui->setupUi(this);
+    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
+
     grade = 0;
     winFlag = 0;
     failFlag = 0;
-
-    qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
-
     snakeBody[0] = QPoint(5,5);
     snakeBody[1] = snakeBody[0] + QPoint(-1,0);
     snakeBody[2] = snakeBody[1] + QPoint(-1,0);
     snakeLen = 3;
-    snakeDir = QPoint(1,0);
+    snakeDir = QPoint(0,0);
 
     runTimer.setInterval(200);
     runTimer.start();
@@ -36,21 +35,16 @@ Widget::~Widget()
     delete ui;
 }
 
-void Widget::SnakeRun()
+void Widget::GetDir()
 {
-    if (winFlag)
+    // 如果按下了方向键，切换蛇头方向，需要注意跨界时的反头
+    if (keyDir != snakeBody[1] + QPoint(0,0) - snakeBody[0]
+            && keyDir != snakeBody[1] + QPoint(ROW,0) - snakeBody[0]
+            && keyDir != snakeBody[1] + QPoint(-ROW,0) - snakeBody[0]
+            && keyDir != snakeBody[1] + QPoint(0,COL) - snakeBody[0]
+            && keyDir != snakeBody[1] + QPoint(0,-COL) - snakeBody[0])
     {
-        runTimer.stop();
-        return ;
-    }
-    else if (failFlag)
-    {
-        runTimer.stop();
-        return ;
-    }
-    for (int i = snakeLen - 1;i > 0; i--)
-    {
-        snakeBody[i] = snakeBody[i-1];
+        snakeDir = keyDir;
     }
     // 是否启用自动吃东西，仅用于debug
     if (0) {
@@ -62,17 +56,29 @@ void Widget::SnakeRun()
         }
         snakeDir = autoDir;
     }
-    snakeBody[0] += snakeDir;
-    snakeBody[0].rx() = (snakeBody[0].x() + ROW) % ROW;
-    snakeBody[0].ry() = (snakeBody[0].y() + COL) % COL;
+}
 
-    if(food == snakeBody[0])
+void Widget::SnakeRun()
+{
+    GetDir();
+    // 蛇头有方向，那么蛇就运动
+    if (QPoint(0,0) != snakeDir)
     {
-        // 将身子最后一节赋值，就不会显示到00了
-        snakeBody[snakeLen] = snakeBody[snakeLen - 1];
-        ++snakeLen;
-        ++grade;
-        CreateFood();
+        for (int i = snakeLen - 1;i > 0; i--)
+        {
+            snakeBody[i] = snakeBody[i-1];
+        }
+        snakeBody[0] += snakeDir;
+        snakeBody[0].rx() = (snakeBody[0].x() + ROW) % ROW;
+        snakeBody[0].ry() = (snakeBody[0].y() + COL) % COL;
+        if(food == snakeBody[0])
+        {
+            // 将身子最后一节赋值，就不会显示到00了
+            snakeBody[snakeLen] = snakeBody[snakeLen - 1];
+            ++snakeLen;
+            ++grade;
+            CreateFood();
+        }
     }
 }
 void Widget::CreateFood()
@@ -111,28 +117,36 @@ void Widget::CreateFood()
 
 void Widget::keyPressEvent(QKeyEvent *event)
 {
-    QPoint keyDir = QPoint(0,0);
-    if("w" == event->text())
+    if ("w" == event->text())
     {
         keyDir = QPoint(0,-1);
     }
-    else if("s" == event->text())
+    else if ("s" == event->text())
     {
         keyDir = QPoint(0,1);
     }
-    else if("a" == event->text())
+    else if ("a" == event->text())
     {
         keyDir = QPoint(-1,0);
     }
-    else if("d" == event->text())
+    else if ("d" == event->text())
     {
         keyDir = QPoint(1,0);
     }
-    // 如果按下了方向键，切换蛇头方向
-    if (keyDir != QPoint(0,0)
-            && snakeBody[0] + keyDir != snakeBody[1])
+    // 加入空格键，进行暂停操作
+    else if ("z" == event->text())
     {
-        snakeDir = keyDir;
+        keyDir = QPoint(0,0);
+    }
+    else if ("r" == event->text()) {
+        grade = 0;
+        winFlag = 0;
+        failFlag = 0;
+        snakeBody[0] = QPoint(5,5);
+        snakeBody[1] = snakeBody[0] + QPoint(-1,0);
+        snakeBody[2] = snakeBody[1] + QPoint(-1,0);
+        snakeLen = 3;
+        snakeDir = QPoint(0,0);
     }
 }
 
