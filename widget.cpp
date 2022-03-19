@@ -16,9 +16,12 @@ Widget::Widget(QWidget *parent)
 
     Init();
 
-    runTimer.start();
     connect(&runTimer,&QTimer::timeout,[=](){
+        GetDir();
         SnakeRun();
+        CheckWin();
+        CheckFail();
+        CreateFood();
     });
     updateTimer.setInterval(10);
     updateTimer.start();
@@ -46,7 +49,45 @@ void Widget::Init()
     keyDir = QPoint(0,0);
     snakeDir = QPoint(0,0);
     delayLevelIdx = DEFAULT_DELAY_LEVEL;
+    runTimer.start();
     runTimer.setInterval(delayLevel[delayLevelIdx]);
+}
+
+void Widget::CheckFail()
+{
+    for (int i = 1;i < snakeLen - 1; i++)
+    {
+        if (snakeBody[i] == snakeBody[0])
+        {
+            failFlag = 1;
+            runTimer.stop();
+        }
+    }
+}
+
+void Widget::CheckWin()
+{
+    int i,j;
+    int emptyExist = 0;
+    memset(snakeOccupy,0,sizeof(snakeOccupy));
+    for ( i = 0;i < snakeLen; i++) {
+        snakeOccupy[snakeBody[i].x()][snakeBody[i].y()] = 1;
+
+    }
+    for (i = 0;(0 == emptyExist) && i < COL; i++) {
+        for (j = 0;(0 == emptyExist) &&  j < ROW; j ++) {
+            if (0 == snakeOccupy[i][j])
+            {
+                // 存在空格，可以启用随机数放置食物
+                emptyExist = 1;
+            }
+        }
+    }
+    // 不存在空格子用于存放食物，那么认为此局已经赢了
+    if (0 == emptyExist) {
+        winFlag = 1;
+        runTimer.stop();
+    }
 }
 
 void Widget::GetDir()
@@ -77,51 +118,36 @@ void Widget::GetDir()
 
 void Widget::SnakeRun()
 {
-    GetDir();
     // 蛇头有方向，那么蛇就运动
-    if (QPoint(0,0) != snakeDir)
+    if (QPoint(0,0) == snakeDir)
     {
-        for (int i = snakeLen - 1;i > 0; i--)
-        {
-            snakeBody[i] = snakeBody[i-1];
-        }
-        snakeBody[0] += snakeDir;
-        snakeBody[0].rx() = (snakeBody[0].x() + ROW) % ROW;
-        snakeBody[0].ry() = (snakeBody[0].y() + COL) % COL;
-        if(food == snakeBody[0])
-        {
-            // 将身子最后一节赋值，就不会显示到00了
-            snakeBody[snakeLen] = snakeBody[snakeLen - 1];
-            ++snakeLen;
-            ++grade;
-            CreateFood();
-        }
+        return;
+    }
+    for (int i = snakeLen - 1;i > 0; i--)
+    {
+        snakeBody[i] = snakeBody[i-1];
+    }
+    snakeBody[0] += snakeDir;
+    snakeBody[0].rx() = (snakeBody[0].x() + ROW) % ROW;
+    snakeBody[0].ry() = (snakeBody[0].y() + COL) % COL;
+    if(food == snakeBody[0])
+    {
+        // 将身子最后一节赋值，就不会显示到00了
+        snakeBody[snakeLen] = snakeBody[snakeLen - 1];
+        ++snakeLen;
+        ++grade;
+        food = QPoint(-1,-1);
     }
 }
 void Widget::CreateFood()
 {
     int i,j;
-    int emptyExist = 0;
-    memset(snakeOccupy,0,sizeof(snakeOccupy));
-    for ( i = 0;i < snakeLen; i++) {
-        snakeOccupy[snakeBody[i].x()][snakeBody[i].y()] = 1;
-
-    }
-    for (i = 0;(0 == emptyExist) && i < COL; i++) {
-        for (j = 0;(0 == emptyExist) &&  j < ROW; j ++) {
-            if (0 == snakeOccupy[i][j])
-            {
-                // 存在空格，可以启用随机数放置食物
-                emptyExist = 1;
-            }
-        }
-    }
     // 如果已经没有空间放下食物，说明游戏胜利
-    if (0 == emptyExist)
+    if (QPoint(-1,-1) != food)
     {
-        winFlag = 1;
+        return;
     }
-    while (emptyExist) {
+    while (1) {
         i = qrand() % ROW;
         j = qrand() % COL;
         if (0 == snakeOccupy[i][j]){

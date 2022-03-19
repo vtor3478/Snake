@@ -35,6 +35,8 @@ public:
     void SnakeRun();
     void CreateFood();
     void Init();
+    void CheckWin();
+    void CheckFail();
     char snakeOccupy[COL][ROW];
     QPoint snakeBody[COL * ROW * 10];
     QPoint snakeDir;
