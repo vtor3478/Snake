@@ -49,6 +49,7 @@ public:
     char winFlag;
     char failFlag;
     char autoFlag;
+    char invincibleFlag;
 
     int delayLevel[DELAY_LEVEL];
     int delayLevelIdx;

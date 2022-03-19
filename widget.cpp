@@ -42,6 +42,7 @@ void Widget::Init()
     winFlag = 0;
     failFlag = 0;
     autoFlag = 0;
+    invincibleFlag = 0;
     snakeBody[0] = QPoint(5,5);
     snakeBody[1] = snakeBody[0] + QPoint(-1,0);
     snakeBody[2] = snakeBody[1] + QPoint(-1,0);
@@ -55,6 +56,10 @@ void Widget::Init()
 
 void Widget::CheckFail()
 {
+    // 如果无敌，直接返回
+    if (invincibleFlag) {
+        return ;
+    }
     for (int i = 1;i < snakeLen - 1; i++)
     {
         if (snakeBody[i] == snakeBody[0])
@@ -180,7 +185,7 @@ void Widget::keyPressEvent(QKeyEvent *event)
         // 按下了方向键，就退出自动模式
         autoFlag = 0;
     }
-    // 加入空格键，进行暂停操作
+    // 加入z键，进行暂停操作
     else if ("z" == event->text())
     {
         keyDir = QPoint(0,0);
@@ -188,6 +193,11 @@ void Widget::keyPressEvent(QKeyEvent *event)
     else if ("x" == event->text())
     {
         autoFlag = 1;
+    }
+    else if ("c" == event->text())
+    {
+        // c键确认无敌
+        invincibleFlag = !invincibleFlag;
     }
     else if ("r" == event->text()) {
         Init();
@@ -209,6 +219,10 @@ void Widget::keyPressEvent(QKeyEvent *event)
 void Widget::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
+    if (invincibleFlag)
+    {
+        painter.setPen(qRgb(255,0,0));
+    }
     QString str = "food:" + QString::number(food.x()) + QString::number(food.y());
     painter.drawText(QPoint(COL,2) * SCALE + QPoint(10,0),str);
     str = "grade="+QString::number(grade);
