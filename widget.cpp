@@ -14,18 +14,8 @@ Widget::Widget(QWidget *parent)
     delayLevel[3] = {50};
     delayLevel[4] = {10};
 
-    grade = 0;
-    winFlag = 0;
-    failFlag = 0;
-    autoFlag = 0;
-    snakeBody[0] = QPoint(5,5);
-    snakeBody[1] = snakeBody[0] + QPoint(-1,0);
-    snakeBody[2] = snakeBody[1] + QPoint(-1,0);
-    snakeLen = 3;
-    snakeDir = QPoint(0,0);
-    delayLevelIdx = DEFAULT_DELAY_LEVEL;
+    Init();
 
-    runTimer.setInterval(delayLevel[delayLevelIdx]);
     runTimer.start();
     connect(&runTimer,&QTimer::timeout,[=](){
         SnakeRun();
@@ -41,6 +31,22 @@ Widget::Widget(QWidget *parent)
 Widget::~Widget()
 {
     delete ui;
+}
+
+void Widget::Init()
+{
+    grade = 0;
+    winFlag = 0;
+    failFlag = 0;
+    autoFlag = 0;
+    snakeBody[0] = QPoint(5,5);
+    snakeBody[1] = snakeBody[0] + QPoint(-1,0);
+    snakeBody[2] = snakeBody[1] + QPoint(-1,0);
+    snakeLen = 3;
+    keyDir = QPoint(0,0);
+    snakeDir = QPoint(0,0);
+    delayLevelIdx = DEFAULT_DELAY_LEVEL;
+    runTimer.setInterval(delayLevel[delayLevelIdx]);
 }
 
 void Widget::GetDir()
@@ -158,18 +164,7 @@ void Widget::keyPressEvent(QKeyEvent *event)
         autoFlag = 1;
     }
     else if ("r" == event->text()) {
-        grade = 0;
-        winFlag = 0;
-        failFlag = 0;
-        autoFlag = 0;
-        snakeBody[0] = QPoint(5,5);
-        snakeBody[1] = snakeBody[0] + QPoint(-1,0);
-        snakeBody[2] = snakeBody[1] + QPoint(-1,0);
-        snakeLen = 3;
-        keyDir = QPoint(0,0);
-        snakeDir = QPoint(0,0);
-        delayLevelIdx = DEFAULT_DELAY_LEVEL;
-        runTimer.setInterval(delayLevel[delayLevelIdx]);
+        Init();
     }
     if ("q" == event->text()) {
         if (delayLevelIdx > 0) {

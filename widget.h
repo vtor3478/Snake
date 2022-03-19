@@ -34,6 +34,7 @@ public:
     void GetDir();
     void SnakeRun();
     void CreateFood();
+    void Init();
     char snakeOccupy[COL][ROW];
     QPoint snakeBody[COL * ROW * 10];
     QPoint snakeDir;
