@@ -16,6 +16,8 @@ QT_END_NAMESPACE
 #define SNAKE_WIDTH 50
 #define FOOD_WIDTH 30
 #define SCALE 50
+#define DELAY_LEVEL 5
+#define DEFAULT_DELAY_LEVEL 2
 
 
 
@@ -43,6 +45,9 @@ public:
     int grade;
     char winFlag;
     char failFlag;
+
+    int delayLevel[DELAY_LEVEL];
+    int delayLevelIdx;
 
 private:
     Ui::Widget *ui;

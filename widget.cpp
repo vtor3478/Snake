@@ -8,6 +8,12 @@ Widget::Widget(QWidget *parent)
     ui->setupUi(this);
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
 
+    delayLevel[0] = {1000};
+    delayLevel[1] = {500};
+    delayLevel[2] = {200};
+    delayLevel[3] = {50};
+    delayLevel[4] = {10};
+
     grade = 0;
     winFlag = 0;
     failFlag = 0;
@@ -16,8 +22,9 @@ Widget::Widget(QWidget *parent)
     snakeBody[2] = snakeBody[1] + QPoint(-1,0);
     snakeLen = 3;
     snakeDir = QPoint(0,0);
+    delayLevelIdx = DEFAULT_DELAY_LEVEL;
 
-    runTimer.setInterval(200);
+    runTimer.setInterval(delayLevel[delayLevelIdx]);
     runTimer.start();
     connect(&runTimer,&QTimer::timeout,[=](){
         SnakeRun();
@@ -146,7 +153,22 @@ void Widget::keyPressEvent(QKeyEvent *event)
         snakeBody[1] = snakeBody[0] + QPoint(-1,0);
         snakeBody[2] = snakeBody[1] + QPoint(-1,0);
         snakeLen = 3;
+        keyDir = QPoint(0,0);
         snakeDir = QPoint(0,0);
+        delayLevelIdx = DEFAULT_DELAY_LEVEL;
+        runTimer.setInterval(delayLevel[delayLevelIdx]);
+    }
+    else if ("q" == event->text()) {
+        if (delayLevelIdx > 0) {
+            -- delayLevelIdx;
+            runTimer.setInterval(delayLevel[delayLevelIdx]);
+        }
+    }
+    else if ("e" == event->text()) {
+        if (delayLevelIdx < DELAY_LEVEL) {
+            ++ delayLevelIdx;
+            runTimer.setInterval(delayLevel[delayLevelIdx]);
+        }
     }
 }
 
@@ -156,7 +178,7 @@ void Widget::paintEvent(QPaintEvent *)
     QString str = "food:" + QString::number(food.x()) + QString::number(food.y());
     painter.drawText(QPoint(COL,2) * SCALE,str);
     str = "grade="+QString::number(grade);
-    painter.drawText(QPoint(COL,4) * SCALE,str);
+    painter.drawText(QPoint(COL,3) * SCALE,str);
 
     painter.drawLine(QPoint(COL,0) * SCALE, QPoint(COL,ROW) * SCALE);
     painter.drawLine(QPoint(0,ROW) * SCALE, QPoint(COL,ROW) * SCALE);
@@ -174,9 +196,11 @@ void Widget::paintEvent(QPaintEvent *)
                         FOOD_WIDTH / 2,FOOD_WIDTH / 2);
     
     if (winFlag) {
-        painter.drawText(QPoint(COL,5) * SCALE,"!!!win!!!");
+        painter.drawText(QPoint(COL,4) * SCALE,"!!!win!!!");
     }
     else if (failFlag) {
-        painter.drawText(QPoint(COL,5) * SCALE,"!!!fail!!!");
+        painter.drawText(QPoint(COL,4) * SCALE,"!!!fail!!!");
     }
+    str = "speed["+QString::number(delayLevelIdx) + "]=" + QString::number(delayLevel[delayLevelIdx]);
+    painter.drawText(QPoint(COL,5) * SCALE,str);
 }
