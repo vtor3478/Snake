@@ -30,13 +30,17 @@ public:
     void paintEvent(QPaintEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
     void SnakeRun();
-    void Feed();
-    QPoint snakeBody[COL * ROW];
+    void CreateFood();
+    char snakeOccupy[COL][ROW];
+    QPoint snakeBody[COL * ROW * 10];
     QPoint snakeDir;
     QPoint food;
     int snakeLen;
     QTimer runTimer;
     QTimer updateTimer;
+    int grade;
+    char winFlag;
+    char failFlag;
 
 private:
     Ui::Widget *ui;
