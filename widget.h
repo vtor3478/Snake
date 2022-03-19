@@ -45,6 +45,7 @@ public:
     int grade;
     char winFlag;
     char failFlag;
+    char autoFlag;
 
     int delayLevel[DELAY_LEVEL];
     int delayLevelIdx;

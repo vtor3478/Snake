@@ -17,6 +17,7 @@ Widget::Widget(QWidget *parent)
     grade = 0;
     winFlag = 0;
     failFlag = 0;
+    autoFlag = 0;
     snakeBody[0] = QPoint(5,5);
     snakeBody[1] = snakeBody[0] + QPoint(-1,0);
     snakeBody[2] = snakeBody[1] + QPoint(-1,0);
@@ -44,17 +45,9 @@ Widget::~Widget()
 
 void Widget::GetDir()
 {
-    // 如果按下了方向键，切换蛇头方向，需要注意跨界时的反头
-    if (keyDir != snakeBody[1] + QPoint(0,0) - snakeBody[0]
-            && keyDir != snakeBody[1] + QPoint(ROW,0) - snakeBody[0]
-            && keyDir != snakeBody[1] + QPoint(-ROW,0) - snakeBody[0]
-            && keyDir != snakeBody[1] + QPoint(0,COL) - snakeBody[0]
-            && keyDir != snakeBody[1] + QPoint(0,-COL) - snakeBody[0])
-    {
-        snakeDir = keyDir;
-    }
     // 是否启用自动吃东西，仅用于debug
-    if (0) {
+    if (autoFlag) {
+        // 此处设置，不会自动推出自动模式
         QPoint autoDir = food - snakeBody[0];
         int max = qMax(qAbs(autoDir.x()),qAbs(autoDir.y()));
         autoDir /= max;
@@ -62,6 +55,17 @@ void Widget::GetDir()
             autoDir.ry() = 0;
         }
         snakeDir = autoDir;
+    }
+    // 如果按下了方向键，切换蛇头方向，需要注意跨界时的反头
+    else if (keyDir != snakeBody[1] + QPoint(0,0) - snakeBody[0]
+            && keyDir != snakeBody[1] + QPoint(ROW,0) - snakeBody[0]
+            && keyDir != snakeBody[1] + QPoint(-ROW,0) - snakeBody[0]
+            && keyDir != snakeBody[1] + QPoint(0,COL) - snakeBody[0]
+            && keyDir != snakeBody[1] + QPoint(0,-COL) - snakeBody[0])
+    {
+        snakeDir = keyDir;
+        // 如果按下了方向键，那么回到手动模式
+        autoFlag = 0;
     }
 }
 
@@ -124,31 +128,40 @@ void Widget::CreateFood()
 
 void Widget::keyPressEvent(QKeyEvent *event)
 {
-    if ("w" == event->text())
+    if ("w" == event->text()
+            || "s" == event->text()
+            || "a" == event->text()
+            || "d" == event->text())
     {
-        keyDir = QPoint(0,-1);
-    }
-    else if ("s" == event->text())
-    {
-        keyDir = QPoint(0,1);
-    }
-    else if ("a" == event->text())
-    {
-        keyDir = QPoint(-1,0);
-    }
-    else if ("d" == event->text())
-    {
-        keyDir = QPoint(1,0);
+        if ("w" == event->text()) {
+            keyDir = QPoint(0,-1);
+        }
+        else if ("s" == event->text()) {
+            keyDir = QPoint(0,1);
+        }
+        else if ("a" == event->text()) {
+            keyDir = QPoint(-1,0);
+        }
+        else if ("d" == event->text()) {
+            keyDir = QPoint(1,0);
+        }
+        // 按下了方向键，就退出自动模式
+        autoFlag = 0;
     }
     // 加入空格键，进行暂停操作
     else if ("z" == event->text())
     {
         keyDir = QPoint(0,0);
     }
+    else if ("x" == event->text())
+    {
+        autoFlag = 1;
+    }
     else if ("r" == event->text()) {
         grade = 0;
         winFlag = 0;
         failFlag = 0;
+        autoFlag = 0;
         snakeBody[0] = QPoint(5,5);
         snakeBody[1] = snakeBody[0] + QPoint(-1,0);
         snakeBody[2] = snakeBody[1] + QPoint(-1,0);
@@ -158,7 +171,7 @@ void Widget::keyPressEvent(QKeyEvent *event)
         delayLevelIdx = DEFAULT_DELAY_LEVEL;
         runTimer.setInterval(delayLevel[delayLevelIdx]);
     }
-    else if ("q" == event->text()) {
+    if ("q" == event->text()) {
         if (delayLevelIdx > 0) {
             -- delayLevelIdx;
             runTimer.setInterval(delayLevel[delayLevelIdx]);
@@ -176,9 +189,9 @@ void Widget::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
     QString str = "food:" + QString::number(food.x()) + QString::number(food.y());
-    painter.drawText(QPoint(COL,2) * SCALE,str);
+    painter.drawText(QPoint(COL,2) * SCALE + QPoint(10,0),str);
     str = "grade="+QString::number(grade);
-    painter.drawText(QPoint(COL,3) * SCALE,str);
+    painter.drawText(QPoint(COL,3) * SCALE + QPoint(10,0),str);
 
     painter.drawLine(QPoint(COL,0) * SCALE, QPoint(COL,ROW) * SCALE);
     painter.drawLine(QPoint(0,ROW) * SCALE, QPoint(COL,ROW) * SCALE);
@@ -196,11 +209,21 @@ void Widget::paintEvent(QPaintEvent *)
                         FOOD_WIDTH / 2,FOOD_WIDTH / 2);
     
     if (winFlag) {
-        painter.drawText(QPoint(COL,4) * SCALE,"!!!win!!!");
+        painter.drawText(QPoint(COL,4) * SCALE + QPoint(10,0),"!!!win!!!");
     }
     else if (failFlag) {
-        painter.drawText(QPoint(COL,4) * SCALE,"!!!fail!!!");
+        painter.drawText(QPoint(COL,4) * SCALE + QPoint(10,0),"!!!fail!!!");
     }
     str = "speed["+QString::number(delayLevelIdx) + "]=" + QString::number(delayLevel[delayLevelIdx]);
-    painter.drawText(QPoint(COL,5) * SCALE,str);
+    painter.drawText(QPoint(COL,5) * SCALE + QPoint(10, 20 * 0),str);
+    str = QString("wsad控制方向,\n");
+    painter.drawText(QPoint(COL,5) * SCALE + QPoint(10, 20 * 1),str);
+    str = QString("q减速，e减速，共5档，默认2");
+    painter.drawText(QPoint(COL,5) * SCALE + QPoint(10, 20 * 2),str);
+    str = QString("r复位，\n");
+    painter.drawText(QPoint(COL,5) * SCALE + QPoint(10, 20 * 3),str);
+    str = QString("z暂停，方向键继续行动,\n");
+    painter.drawText(QPoint(COL,5) * SCALE + QPoint(10, 20 * 4),str);
+    str = QString("x切换为自动模式，\n");
+    painter.drawText(QPoint(COL,5) * SCALE + QPoint(10, 20 * 5),str);
 }
