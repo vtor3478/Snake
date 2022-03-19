@@ -11,15 +11,15 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class Widget; }
 QT_END_NAMESPACE
 
-#define COL 10 // 列，常用于y
-#define ROW 10 // 行，常用于x
-#define SNAKE_WIDTH 50
-#define FOOD_WIDTH 30
-#define SCALE 50
-#define DELAY_LEVEL 5
-#define DEFAULT_DELAY_LEVEL 2
-#define EAT_YOURSELF    1
-#define HIT_THE_WALL    2
+#define COL 20 // 列，常用于y
+#define ROW 20 // 行，常用于x
+#define SNAKE_WIDTH 18 // 蛇的半径，一般比比例放大倍数略小
+#define FOOD_WIDTH 14 // 食物半径，比比例放大倍数略小（小于蛇半径，更易区分）
+#define SCALE 20 // 比例放大倍数
+#define DELAY_LEVEL 8 // 速度等级，如果需要更加细分的速度，增大此值，并在cpp文件内细分
+#define DEFAULT_DELAY_LEVEL 2 // 默认速度等级
+#define EAT_YOURSELF    1 // fail标志位，吃自己
+#define HIT_THE_WALL    2 // fail标志位，撞墙
 
 
 

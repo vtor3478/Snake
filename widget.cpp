@@ -11,8 +11,11 @@ Widget::Widget(QWidget *parent)
     delayLevel[0] = {1000};
     delayLevel[1] = {500};
     delayLevel[2] = {200};
-    delayLevel[3] = {50};
-    delayLevel[4] = {10};
+    delayLevel[3] = {150};
+    delayLevel[4] = {100};
+    delayLevel[5] = {50};
+    delayLevel[6] = {20};
+    delayLevel[7] = {10};
 
     Init();
 
@@ -105,7 +108,7 @@ void Widget::GetDir()
 {
     // 是否启用自动吃东西，仅用于debug
     if (autoFlag) {
-        // 此处设置，不会自动推出自动模式
+        // 此处设置，不会自动退出自动模式
         QPoint autoDir = food - snakeBody[0];
         int max = qMax(qAbs(autoDir.x()),qAbs(autoDir.y()));
         autoDir /= max;
